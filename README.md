@@ -11,6 +11,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 A lightweight Firefox extension that allows you to easily copy open tabs in your current window to your clipboard, and paste a list of URLs from your clipboard to open them simultaneously. 
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 Right-click on any tab in your browser to access the extension's submenu, which contains the following actions:
