@@ -10,7 +10,7 @@
       .icon { stroke: #ffffff; }
     }
 
-    /* Native dark mode: Hide the halo and turn the icon white */
+    /* Native light mode: Hide the halo and turn the icon black */
     @media (prefers-color-scheme: light) {
       .halo { stroke: none; }
       .icon { stroke: #000000; }
