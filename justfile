@@ -8,4 +8,4 @@
 # Output key project file paths for LLM prompt context
 context:
   #!/usr/bin/env bash
-  printf "%s\n" background.js manifest.json README.md
+  printf "%s\n" background.js icon.svg justfile manifest.json README.md
