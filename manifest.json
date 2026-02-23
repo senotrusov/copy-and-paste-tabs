@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Copy & paste tabs",
+  "version": "0.0.0",
+  "description": "Copy all tabs to clipboard and open tabs from clipboard URLs.",
+  "author": "Stanislav Senotrusov",
+  "homepage_url": "https://github.com/senotrusov/copy-and-paste-tabs",
+  "permissions": [
+    "menus",
+    "tabs",
+    "clipboardWrite",
+    "clipboardRead"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "icons": {
+    "48": "icon.svg"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "copy-and-paste-tabs@senotrusov.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

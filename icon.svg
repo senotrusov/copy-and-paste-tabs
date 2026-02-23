@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <style>
+    /* Default light mode: Black icon with a thicker white halo behind it */
+    .halo { stroke: #ffffff; stroke-width: 4; }
+    .icon { stroke: #000000; stroke-width: 2; }
+    
+    /* Native dark mode: Hide the halo and turn the icon white */
+    @media (prefers-color-scheme: dark) {
+      .halo { stroke: none; }
+      .icon { stroke: #ffffff; }
+    }
+
+    /* Native light mode: Hide the halo and turn the icon black */
+    @media (prefers-color-scheme: light) {
+      .halo { stroke: none; }
+      .icon { stroke: #000000; }
+    }
+  </style>
+  
+  <g class="halo">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </g>
+  
+  <g class="icon">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </g>
+</svg>
