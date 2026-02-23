@@ -18,8 +18,8 @@ A lightweight Firefox extension that allows you to easily copy open tabs in your
 
 Right-click on any tab in your browser to access the extension's submenu, which contains the following actions:
 
-- **Copy tabs from the current window**: Copies a list of all *unpinned* tabs in the active window.
-- **Copy tabs from the current window (including pinned)**: Copies a list of *all* tabs in the active window, including the pinned ones.
+- **Copy tabs**: Copies a list of all *unpinned* tabs in the active window.
+- **Copy tabs (including pinned)**: Copies a list of *all* tabs in the active window, including the pinned ones.
 - **Copy selected tabs**: Copies a list of all currently highlighted (selected) tabs in the active window, regardless of whether they are pinned.
 - **Copy tabs from all windows**: Copies a list of all *unpinned* tabs across all open browser windows.
 - **Copy tabs from all windows (including pinned)**: Copies a list of *every* open tab across all windows, including the pinned ones.

@@ -25,14 +25,14 @@ browser.runtime.onInstalled.addListener(async () => {
   await browser.menus.create({
     id: "copy-all-tabs",
     parentId: "parent-menu",
-    title: "Copy &tabs from the current window",
+    title: "Copy &tabs",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-tabs-including-pinned",
     parentId: "parent-menu",
-    title: "Copy t&abs from the current window (including pinned)",
+    title: "Copy t&abs (including pinned)",
     contexts: ["tab"]
   });
 
