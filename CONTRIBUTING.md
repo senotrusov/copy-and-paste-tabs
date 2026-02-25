@@ -13,8 +13,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 ## Licensing of contributions
 
 By submitting a contribution, you agree that it may be distributed
-under the project's dual-license terms: the Apache License, Version 2.0
-and the MIT License. See the [LICENSE](LICENSE) file for the full legal terms.
+under the project's dual-license terms: the Apache License,
+Version 2.0 and the MIT License. See the [LICENSE](LICENSE)
+file for the full legal terms.
 
 ## Code signing
 
@@ -135,3 +136,29 @@ Signed-off-by: Contributor Identity <email@example.com>
 
 using a consistent identity that can be attributed to the
 contributor within the project.
+
+## Tool-generated content
+
+This section applies to any content produced with the assistance
+of automated tools, such as AI systems, code formatters, or
+similar utilities, including code, documentation, images, and
+other project assets.
+
+Human contributors bear sole responsibility for all submitted
+contributions. Use of automated tools does not diminish or
+transfer this responsibility. The human contributor remains
+fully accountable for the authorship, provenance, the right
+to submit, and legal compliance of the contribution, including
+applicable intellectual property and licensing obligations.
+
+Before submission, contributors must review, test, and validate
+any tool-generated content and ensure that it complies with
+the project's license(s), these Contribution guidelines, and
+any relevant third-party license terms. Contributors must not
+submit tool-generated content that cannot be lawfully used,
+copied, modified, or redistributed under the terms of the
+project's license(s).
+
+Automated tools and AI systems must not add Signed-off-by
+tags. Certification under the Developer's Certificate of Origin
+may be provided only by a human contributor.
