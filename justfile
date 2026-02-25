@@ -64,7 +64,7 @@ package := "dist/" + project + "-" + version + ".zip"
 # Format project files
 format:
   mdformat --number *.md
-  rg "[^\x00-\x7F]" && true
+  rg "[^\x00-\x7F]" || true
 
 # Output key project file paths for LLM prompt context
 context:
