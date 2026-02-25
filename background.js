@@ -25,42 +25,42 @@ browser.runtime.onInstalled.addListener(async () => {
   await browser.menus.create({
     id: "copy-all-tabs",
     parentId: "parent-menu",
-    title: "Copy &all tabs", // 'a' is a good shortcut for 'all'
+    title: "Copy &all unpinned tabs",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-tabs-including-pinned",
     parentId: "parent-menu",
-    title: "Copy all tabs (including &pinned)", // 'p' for pinned
+    title: "Copy all tabs (&including pinned)",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-selected-tabs",
     parentId: "parent-menu",
-    title: "Copy &selected tabs", // 's' for selected
+    title: "Copy &selected tabs",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-windows",
     parentId: "parent-menu",
-    title: "Copy tabs from all &windows", // 'w' for windows
+    title: "Copy unpinned tabs from all &windows",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-windows-including-pinned",
     parentId: "parent-menu",
-    title: "Copy tabs from all windows (including pinne&d)", // 'd' because 'p' is taken
+    title: "Copy tabs from all windows (including pinne&d)",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "paste-tabs",
     parentId: "parent-menu",
-    title: "&Paste tabs", // 'p' for paste
+    title: "&Paste tabs",
     contexts: ["tab"]
   });
 });
