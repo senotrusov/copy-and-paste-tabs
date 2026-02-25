@@ -18,10 +18,10 @@ A lightweight Firefox extension that allows you to easily copy open tabs in your
 
 Right-click on any tab in your browser to access the extension's submenu, which contains the following actions:
 
-- **Copy tabs**: Copies a list of all *unpinned* tabs in the active window.
-- **Copy tabs (including pinned)**: Copies a list of *all* tabs in the active window, including the pinned ones.
-- **Copy selected tabs**: Copies a list of all currently highlighted (selected) tabs in the active window, regardless of whether they are pinned.
-- **Copy tabs from all windows**: Copies a list of all *unpinned* tabs across all open browser windows.
+- **Copy all unpinned tabs**: Copies a list of all *unpinned* tabs in the active window.
+- **Copy all tabs (including pinned)**: Copies a list of *every* tab in the active window, including those that are pinned.
+- **Copy selected tabs**: Copies a list of all currently highlighted (selected) tabs in the active window.
+- **Copy unpinned tabs from all windows**: Copies a list of all *unpinned* tabs across every open browser window.
 - **Copy tabs from all windows (including pinned)**: Copies a list of *every* open tab across all windows, including the pinned ones.
 - **Paste tabs**: Extracts all valid `http://`, `https://`, and `file://` URLs from your current clipboard text and instantly opens them as new tabs in the background.
 
@@ -42,6 +42,10 @@ When copying tabs to your clipboard, the extension outputs plain text formatted 
 
 - **Protocol Filtering:** The extension ignores browser-internal pages (like `about:config` or `about:addons`) and extension pages. It only copies standard web links (`http`/`https`) and local files (`file`). The same filter is applied when pasting.
 - **Missing Titles:** If a tab happens to be missing a title, the extension will omit the empty title line and output just the URL.
+
+## Privacy
+
+**No data collection:** This extension only interacts with your tabs and clipboard when you explicitly trigger an action from the tab context menu. It does not access the network and processes all URLs and text locally on your device.
 
 ## License
 
