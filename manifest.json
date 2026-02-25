@@ -12,7 +12,9 @@
     "clipboardRead"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "icons": {
     "48": "icon.svg"
