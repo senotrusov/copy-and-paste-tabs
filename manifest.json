@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Copy & paste tabs",
+  "name": "Copy and Paste Tabs",
   "version": "0.0.0",
   "description": "Copy all tabs to clipboard and open tabs from clipboard URLs.",
   "author": "Stanislav Senotrusov",

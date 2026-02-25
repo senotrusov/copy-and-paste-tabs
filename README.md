@@ -8,7 +8,7 @@ for the full license terms.
 SPDX-License-Identifier: Apache-2.0 OR MIT
 -->
 
-# Copy and paste tabs
+# Copy and Paste Tabs
 
 A lightweight Firefox extension that allows you to easily copy open tabs in your current window or across all windows to your clipboard, and paste a list of URLs from your clipboard to open them simultaneously.
 

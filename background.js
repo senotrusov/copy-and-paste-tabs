@@ -14,10 +14,10 @@ browser.runtime.onInstalled.addListener(async () => {
   // Await each creation to guarantee the order in the menu
 
   // 1. Manually create the parent menu item.
-  // We use && here so the OS menu renders a single literal &
+  // Do not add a shortcut to the Parent menu to prevent conflicts with the browser's native shortcuts.
   await browser.menus.create({
     id: "parent-menu",
-    title: "Cop&y && paste tabs",
+    title: "Copy and paste tabs",
     contexts: ["tab"] // Appears when right-clicking on any tab
   });
 
@@ -25,42 +25,42 @@ browser.runtime.onInstalled.addListener(async () => {
   await browser.menus.create({
     id: "copy-all-tabs",
     parentId: "parent-menu",
-    title: "Copy &tabs",
+    title: "Copy &all tabs", // 'a' is a good shortcut for 'all'
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-tabs-including-pinned",
     parentId: "parent-menu",
-    title: "Copy t&abs (including pinned)",
+    title: "Copy all tabs (including &pinned)", // 'p' for pinned
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-selected-tabs",
     parentId: "parent-menu",
-    title: "Copy &selected tabs",
+    title: "Copy &selected tabs", // 's' for selected
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-windows",
     parentId: "parent-menu",
-    title: "Copy tabs from all &windows",
+    title: "Copy tabs from all &windows", // 'w' for windows
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "copy-all-windows-including-pinned",
     parentId: "parent-menu",
-    title: "Copy tabs from all w&indows (including pinned)",
+    title: "Copy tabs from all windows (including pinne&d)", // 'd' because 'p' is taken
     contexts: ["tab"]
   });
 
   await browser.menus.create({
     id: "paste-tabs",
     parentId: "parent-menu",
-    title: "&Paste tabs",
+    title: "&Paste tabs", // 'p' for paste
     contexts: ["tab"]
   });
 });
