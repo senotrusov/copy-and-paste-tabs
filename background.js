@@ -322,6 +322,26 @@ function isWindowBlank(tabs) {
   return tabs.every(t => blankPageUrls.has(t.url));
 }
 
+// Helper to determine if a line acts as a window divider based on various markup languages
+function isWindowDivider(line) {
+  // Matches ATX-style and tag-like headers: Markdown (##), AsciiDoc (==), Org-mode (**), Textile (h2.)
+  const atxRegex = /^(?:##|==|\*\*|h2\.)(?:$|\s)/;
+  
+  // Matches MediaWiki symmetrical headers (e.g., ==Heading==)
+  const mediaWikiRegex = /^==.*==$/;
+  
+  // Matches LaTeX semantic commands
+  const latexRegex = /^\\subsection\{/;
+  
+  // Matches Setext-style adornments/underlines for Markdown (---), reST (===, ---, or ~~~), and AsciiDoc (~~~)
+  const setextRegex = /^[-~=]{3,}$/;
+
+  return atxRegex.test(line) || 
+         mediaWikiRegex.test(line) || 
+         latexRegex.test(line) || 
+         setextRegex.test(line);
+}
+
 // Helper to parse clipboard lines into batches of URLs for current or new windows
 function parseBatches(lines, startInCurrentWindow) {
   const urlRegex = /(?:https?|file):\/\/[^\s]+/ig;
@@ -332,7 +352,8 @@ function parseBatches(lines, startInCurrentWindow) {
   // Linearly parse through the clipboard text
   for (const line of lines) {
     const trimmed = line.trim();
-    if (trimmed === "##" || trimmed.startsWith("## ")) {
+    
+    if (isWindowDivider(trimmed)) {
       if (!hasSeenHeader) {
         hasSeenHeader = true;
         // If URLs were found before the first header, they form a batch
