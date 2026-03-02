@@ -72,7 +72,6 @@ context:
   printf "%s\n" \
     *.js \
     *.svg \
-    justfile \
     manifest.json \
     README.md
 
