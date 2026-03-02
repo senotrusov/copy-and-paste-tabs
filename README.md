@@ -53,7 +53,7 @@ When copying tabs, the extension outputs plain text formatted with Markdown comp
 The **Paste into multiple windows** feature uses intelligent window allocation:
 - **Blank Window Detection:** If your current window is "blank" (e.g., only showing the New Tab page), the first batch of URLs will open in the current window instead of spawning a new one.
 - **Multi-Format Divider Support:** The extension recognizes window boundaries from various markup languages, allowing you to paste lists stored in different document types:
-    - **Markdown / AsciiDoc / Org-mode / Textile**: ATX-style headers (e.g., `##`, `==`, `**`, `h2.`).
+    - **Markdown / AsciiDoc / Org mode / Textile**: ATX-style headers (e.g., `##`, `==`, `**`, `h2.`).
     - **MediaWiki**: Symmetrical headers (e.g., `==Heading==`).
     - **LaTeX**: Semantic commands (e.g., `\subsection{`).
     - **Setext-style**: Underlines or adornments (e.g., `---`, `===`, `~~~`) used in Markdown, reStructuredText, or AsciiDoc.

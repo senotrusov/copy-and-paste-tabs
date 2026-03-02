@@ -324,7 +324,7 @@ function isWindowBlank(tabs) {
 
 // Helper to determine if a line acts as a window divider based on various markup languages
 function isWindowDivider(line) {
-  // Matches ATX-style and tag-like headers: Markdown (##), AsciiDoc (==), Org-mode (**), Textile (h2.)
+  // Matches ATX-style and tag-like headers: Markdown (##), AsciiDoc (==), Org mode (**), Textile (h2.)
   const atxRegex = /^(?:##|==|\*\*|h2\.)(?:$|\s)/;
   
   // Matches MediaWiki symmetrical headers (e.g., ==Heading==)
