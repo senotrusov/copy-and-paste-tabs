@@ -16,32 +16,51 @@ A lightweight Firefox extension that allows you to easily copy open tabs in your
 
 ## Features
 
-Right-click on any tab in your browser to access the extension's submenu, which contains the following actions:
+Right-click on any tab in your browser to access the extension submenu:
 
-- **Copy all unpinned tabs**: Copies a list of all *unpinned* tabs in the active window.
-- **Copy all tabs (including pinned)**: Copies a list of *every* tab in the active window, including those that are pinned.
-- **Copy selected tabs**: Copies a list of all currently highlighted (selected) tabs in the active window.
-- **Copy unpinned tabs from all windows**: Copies a list of all *unpinned* tabs across every open browser window.
-- **Copy tabs from all windows (including pinned)**: Copies a list of *every* open tab across all windows, including the pinned ones.
-- **Paste tabs**: Extracts all valid `http://`, `https://`, and `file://` URLs from your current clipboard text and instantly opens them as new tabs in the background.
+- **Copy unpinned**: Copies a list of all unpinned tabs in the active window.
+- **Copy all**: Copies a list of every tab in the active window, including those that are pinned.
+- **Copy selected**: Copies a list of all currently selected tabs.
+- **Copy unpinned from all windows**: Copies unpinned tabs across every open browser window, grouped by window headers.
+- **Copy all from all windows**: Copies every open tab across all windows, grouped by window headers.
+- **Paste into one window**: Extracts URLs from the clipboard and opens them as new tabs in the current window.
+- **Paste into multiple windows**: Reconstructs window structures by opening URLs in new windows whenever a window divider is detected in the clipboard text.
 
 ### Copy Format
 
-When copying tabs to your clipboard, the extension outputs plain text formatted like this:
+When copying tabs, the extension outputs plain text formatted with Markdown compatibility. For multi-window copies, it generates headers based on the top three most frequent domains in each window.
 
 ```text
-{tab title}
+## wikipedia.org, openstreetmap.org, stackoverflow.com...
+
+{tab title}  
 {tab url}
 
-{tab title}
+{tab title}  
 {tab url}
 
+## gutenberg.org, archive.org
+
+{tab title}  
+{tab url}
 ```
 
-### Smart Filtering
+- **Markdown Line Breaks:** Each title is followed by two trailing spaces to ensure proper line breaks when rendered in Markdown viewers.
+- **Missing Titles:** If a tab has no title, the extension omits the title line and provides only the URL.
 
-- **Protocol Filtering:** The extension ignores browser-internal pages (like `about:config` or `about:addons`) and extension pages. It only copies standard web links (`http`/`https`) and local files (`file`). The same filter is applied when pasting.
-- **Missing Titles:** If a tab happens to be missing a title, the extension will omit the empty title line and output just the URL.
+### Smart Paste Logic
+
+The **Paste into multiple windows** feature uses intelligent window allocation:
+- **Blank Window Detection:** If your current window is "blank" (e.g., only showing the New Tab page), the first batch of URLs will open in the current window instead of spawning a new one.
+- **Multi-Format Divider Support:** The extension recognizes window boundaries from various markup languages, allowing you to paste lists stored in different document types:
+    - **Markdown / AsciiDoc / Org-mode / Textile**: ATX-style headers (e.g., `##`, `==`, `**`, `h2.`).
+    - **MediaWiki**: Symmetrical headers (e.g., `==Heading==`).
+    - **LaTeX**: Semantic commands (e.g., `\subsection{`).
+    - **Setext-style**: Underlines or adornments (e.g., `---`, `===`, `~~~`) used in Markdown, reStructuredText, or AsciiDoc.
+
+### Protocol Filtering
+
+The extension ignores browser-internal pages (like `about:config`) and extension pages. It only processes standard web links (`http`/`https`) and local files (`file`).
 
 ## Privacy
 
