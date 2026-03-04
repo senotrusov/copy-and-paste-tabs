@@ -26,45 +26,42 @@ Right-click on any tab in your browser to access the extension submenu:
 - **Paste into one window**: Extracts URLs from the clipboard and opens them as new tabs in the current window.
 - **Paste into multiple windows**: Reconstructs window structures by opening URLs in new windows whenever a window divider is detected in the clipboard text.
 
-### Copy Format
+### Copy format selection
 
-When copying tabs, the extension outputs plain text formatted with Markdown compatibility. For multi-window copies, it generates headers based on the top three most frequent domains in each window.
+You can choose your preferred format from the **Copy format** submenu. The selected format is saved and used for all future copy operations.
 
-```text
-## wikipedia.org, openstreetmap.org, stackoverflow.com...
+Supported formats:
 
-{tab title}  
-{tab url}
+- **AsciiDoc**: `url[Title]`
+- **LaTeX**: `\href{url}{Title}`
+- **Markdown**: `[Title](url)`
+- **Markdown with plain links** (Default): `Title` followed by two spaces and `url` on the next line (forces a line break in Markdown viewers).
+- **MediaWiki**: `[url Title]`
+- **Org mode**: `[[url][Title]]`
+- **Plain text**: `Title` followed by `url` on the next line (no trailing spaces).
+- **reStructuredText**: `` `Title <url>`__ ``
+- **Textile**: `"Title":url`
 
-{tab title}  
-{tab url}
+When copying from multiple windows, the extension generates subsection headers (`##` or an equivalent) using titles based on the three most frequent domains in each window.
 
-## gutenberg.org, archive.org
-
-{tab title}  
-{tab url}
-```
-
-- **Markdown Line Breaks:** Each title is followed by two trailing spaces to ensure proper line breaks when rendered in Markdown viewers.
-- **Missing Titles:** If a tab has no title, the extension omits the title line and provides only the URL.
-
-### Smart Paste Logic
+### Smart paste logic
 
 The **Paste into multiple windows** feature uses intelligent window allocation:
+
 - **Blank Window Detection:** If your current window is "blank" (e.g., only showing the New Tab page), the first batch of URLs will open in the current window instead of spawning a new one.
 - **Multi-Format Divider Support:** The extension recognizes window boundaries from various markup languages, allowing you to paste lists stored in different document types:
-    - **Markdown / AsciiDoc / Org mode / Textile**: ATX-style headers (e.g., `##`, `==`, `**`, `h2.`).
-    - **MediaWiki**: Symmetrical headers (e.g., `==Heading==`).
-    - **LaTeX**: Semantic commands (e.g., `\subsection{`).
-    - **Setext-style**: Underlines or adornments (e.g., `---`, `===`, `~~~`) used in Markdown, reStructuredText, or AsciiDoc.
+  - **Markdown / AsciiDoc / Org mode / Textile**: ATX-style headers (e.g., `##`, `==`, `**`, `h2.`).
+  - **MediaWiki**: Symmetrical headers (e.g., `==Heading==`).
+  - **LaTeX**: Semantic commands (e.g., `\subsection{`).
+  - **Setext-style**: Underlines or adornments (e.g., `---`, `===`, `~~~`) used in Markdown, reStructuredText, or AsciiDoc.
 
-### Protocol Filtering
+### Protocol filtering
 
 The extension ignores browser-internal pages (like `about:config`) and extension pages. It only processes standard web links (`http`/`https`) and local files (`file`).
 
 ## Privacy
 
-**No data collection:** This extension only interacts with your tabs and clipboard when you explicitly trigger an action from the tab context menu. It does not access the network and processes all URLs and text locally on your device.
+**No data collection:** This extension only interacts with your tabs, clipboard, and local storage (to save formatting preferences) when you explicitly trigger an action from the tab context menu. It does not access the network and processes all URLs and text locally on your device.
 
 ## License
 

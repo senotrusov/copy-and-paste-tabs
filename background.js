@@ -6,104 +6,163 @@
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
+const FORMAT_OPTIONS = [
+  { id: "asciidoc", label: "AsciiDoc" },
+  { id: "latex", label: "LaTeX" },
+  { id: "markdown", label: "Markdown" },
+  { id: "markdown-plain-links", label: "Markdown with plain links" },
+  { id: "mediawiki", label: "MediaWiki" },
+  { id: "orgmode", label: "Org mode" },
+  { id: "plaintext", label: "Plain text" },
+  { id: "restructuredtext", label: "reStructuredText" },
+  { id: "textile", label: "Textile" }
+];
+
+const DEFAULT_FORMAT = "markdown-plain-links";
+
+// Returns a new instance of the URL-matching regular expression.
+// This function ensures a fresh regex object with a reset `lastIndex` is
+// used for each operation, preventing state-related issues with the global flag
+// in asynchronous contexts. The regex matches http/https/file schemes,
+// including bracketed IPv6, and consumes URL characters until whitespace or
+// common trailing markup/quote delimiters, while avoiding trailing punctuation.
+function getUrlRegex() {
+  return /\b(?:https?|file):\/\/(?:(?:\[|%5B)[a-fA-F0-9:.]+(?:(?:%25|%)[a-zA-Z0-9]+)?(?:\]|%5D)(?::\d+)?[^\[})\s\]>"']*|[^\[})\s\]>"']+)(?<![.,;])/ig;
+}
+
 // Register the context menu items when the extension is installed or starts
 browser.runtime.onInstalled.addListener(async () => {
-  // Clear any existing menu items to prevent errors
+  // Clear any existing menu items
   await browser.menus.removeAll();
 
-  // Await each creation to guarantee the order in the menu
-
-  // 1. Manually create the parent menu item.
+  // 1. Create parent menu
   // Do not add a shortcut to the Parent menu to prevent conflicts with the browser's native shortcuts.
   await browser.menus.create({
     id: "parent-menu",
     title: "Copy and paste tabs",
-    contexts: ["tab"] // Appears when right-clicking on any tab
-  });
-
-  // 2. Create the child items and attach them to the parent using 'parentId'
-  await browser.menus.create({
-    id: "copy-all-tabs",
-    parentId: "parent-menu",
-    title: "&Copy unpinned", // Key: C
     contexts: ["tab"]
   });
 
-  await browser.menus.create({
-    id: "copy-all-tabs-including-pinned",
-    parentId: "parent-menu",
-    title: "Copy &all", // Key: A
-    contexts: ["tab"]
-  });
+  // 2. Create copy/paste actions
+  const actionItems = [
+    { id: "copy-all-tabs-including-pinned", title: "Copy &all tabs" },
+    { id: "copy-all-tabs", title: "&Copy unpinned tabs" },
+    { id: "copy-selected-tabs", title: "Copy &selected tabs" },
+    { id: "separator-1", type: "separator" },
+    { id: "copy-all-windows-including-pinned", title: "Copy all tabs from every &window" },
+    { id: "copy-all-windows", title: "Copy &unpinned tabs from every window" },
+    { id: "separator-2", type: "separator" },
+    { id: "paste-tabs", title: "&Paste tabs into one window" },
+    { id: "paste-tabs-multiple-windows", title: "Paste tabs into &multiple windows" }
+  ];
 
-  await browser.menus.create({
-    id: "copy-selected-tabs",
-    parentId: "parent-menu",
-    title: "Copy &selected", // Key: S
-    contexts: ["tab"]
-  });
+  for (const item of actionItems) {
+    await browser.menus.create({
+      id: item.id,
+      parentId: "parent-menu",
+      title: item.title,
+      type: item.type || "normal",
+      contexts: ["tab"]
+    });
+  }
 
+  // 3. Create Format Selection Submenu
   await browser.menus.create({
-    id: "separator-1",
+    id: "separator-format",
     type: "separator",
     parentId: "parent-menu",
     contexts: ["tab"]
   });
 
   await browser.menus.create({
-    id: "copy-all-windows",
+    id: "format-submenu",
     parentId: "parent-menu",
-    title: "Copy unpinned from all &windows", // Key: W
+    title: "Copy format",
     contexts: ["tab"]
   });
 
-  await browser.menus.create({
-    id: "copy-all-windows-including-pinned",
-    parentId: "parent-menu",
-    title: "Copy all from all win&dows", // Key: D
-    contexts: ["tab"]
-  });
+  // Retrieve validated preference to set the correct radio button
+  const currentFormat = await getValidatedFormatId();
 
-  await browser.menus.create({
-    id: "separator-2",
-    type: "separator",
-    parentId: "parent-menu",
-    contexts: ["tab"]
-  });
-
-  await browser.menus.create({
-    id: "paste-tabs",
-    parentId: "parent-menu",
-    title: "&Paste into one window", // Key: P
-    contexts: ["tab"]
-  });
-
-  await browser.menus.create({
-    id: "paste-tabs-multiple-windows",
-    parentId: "parent-menu",
-    title: "Paste into &multiple windows", // Key: M
-    contexts: ["tab"]
-  });
+  for (const option of FORMAT_OPTIONS) {
+    await browser.menus.create({
+      id: `format-${option.id}`,
+      parentId: "format-submenu",
+      title: option.label,
+      type: "radio",
+      checked: option.id === currentFormat,
+      contexts: ["tab"]
+    });
+  }
 });
 
 // Listen for clicks on the context menu items
 browser.menus.onClicked.addListener(async (info, tab) => {
+  // Handle Format Selection
+  if (info.menuItemId.startsWith("format-")) {
+    const newFormatId = info.menuItemId.replace("format-", "");
+    await browser.storage.local.set({ copyFormat: newFormatId });
+    return;
+  }
+
+  // Handle Actions
+  // We fetch and validate the current format ID before processing copy commands
+  const formatId = await getValidatedFormatId();
+
   if (info.menuItemId === "copy-all-tabs") {
-    await copyTabs({ currentWindow: true, pinned: false });
+    await copyTabs({ currentWindow: true, pinned: false }, formatId);
+
   } else if (info.menuItemId === "copy-all-tabs-including-pinned") {
-    await copyTabs({ currentWindow: true });
+    await copyTabs({ currentWindow: true }, formatId);
+
   } else if (info.menuItemId === "copy-selected-tabs") {
-    await copyTabs({ currentWindow: true, highlighted: true });
+    await copyTabs({ currentWindow: true, highlighted: true }, formatId);
+
   } else if (info.menuItemId === "copy-all-windows") {
-    await copyTabs({ pinned: false });
+    await copyTabs({ pinned: false }, formatId);
+
   } else if (info.menuItemId === "copy-all-windows-including-pinned") {
-    await copyTabs({});
+    await copyTabs({}, formatId);
+
   } else if (info.menuItemId === "paste-tabs") {
     await pasteTabs();
+
   } else if (info.menuItemId === "paste-tabs-multiple-windows") {
     await pasteTabsMultipleWindows();
   }
 });
+
+// Listens for changes in local storage to keep the context menu radio buttons 
+// in sync with the saved format preference. This ensures the UI remains accurate 
+// if the setting is changed programmatically or via other components.
+// 
+// To prevent visual glitches where multiple items appear checked, we 
+// explicitly update the 'checked' state for all items in the radio group.
+// If the provided format ID is not found in the valid options list, the 
+// "plaintext" option is selected as a safe fallback.
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.copyFormat) {
+    const newFormatId = changes.copyFormat.newValue;
+    const isValid = FORMAT_OPTIONS.some(option => option.id === newFormatId);
+    const targetId = isValid ? newFormatId : DEFAULT_FORMAT;
+
+    for (const option of FORMAT_OPTIONS) {
+      browser.menus.update(`format-${option.id}`, {
+        checked: option.id === targetId
+      });
+    }
+  }
+});
+
+// Retrieves the preferred copy format ID from local storage.
+// To ensure data integrity, this function verifies that the stored ID
+// exists within the available format options. If the stored value is
+// missing, invalid, or corrupted, it falls back to a safe default.
+async function getValidatedFormatId() {
+  const { copyFormat } = await browser.storage.local.get("copyFormat");
+  const isValid = FORMAT_OPTIONS.some(option => option.id === copyFormat);
+  return isValid ? copyFormat : DEFAULT_FORMAT;
+}
 
 // Helper function to check if a URL has an allowed protocol
 function isAllowedProtocol(url) {
@@ -113,121 +172,179 @@ function isAllowedProtocol(url) {
          url.startsWith("file://");
 }
 
-// Helper function to process an array of tabs and format them as a single string
-function formatTabsToText(tabs) {
+// Escapes special LaTeX characters in a string to prevent formatting errors
+// when the string is compiled in a LaTeX document. Replaces characters
+// with their corresponding LaTeX commands or escaped versions in a single
+// pass to avoid double-escaping previously modified characters.
+function escapeLatex(str) {
+  const latexReplacements = {
+    '\\': '\\textbackslash{}',
+    '&': '\\&',
+    '%': '\\%',
+    '$': '\\$',
+    '#': '\\#',
+    '_': '\\_',
+    '{': '\\{',
+    '}': '\\}',
+    '~': '\\textasciitilde{}',
+    '^': '\\textasciicircum{}'
+  };
+  
+  return str.replace(/[\\&%$#_{}~^]/g, match => latexReplacements[match]);
+}
+
+// Encodes specific characters in a URL that frequently conflict with markup
+// language delimiters (e.g., brackets in AsciiDoc or parentheses in Markdown).
+// It also encodes LaTeX-sensitive characters like braces and backslashes that
+// could prematurely terminate the \href command. This ensures the resulting 
+// link string remains syntactically valid across all supported formats.
+function encodeUrlSpecialChars(url) {
+  const replacements = {
+    '[': '%5B',
+    ']': '%5D',
+    '(': '%28',
+    ')': '%29',
+    '{': '%7B',
+    '}': '%7D',
+    '`': '%60',
+    '\\': '%5C'
+  };
+  return url.replace(/[\[\](){}`\\]/g, match => replacements[match]);
+}
+
+// Returns an object containing formatter functions for the selected markup language
+function getFormatProfile(formatId) {
+  switch (formatId) {
+    case "asciidoc":
+      return {
+        link: (t, u) => `${u}[${t}]\n\n`,
+        header: (t) => `== ${t}\n\n`
+      };
+    case "latex":
+      return {
+        link: (t, u) => `\\href{${u}}{${escapeLatex(t)}}\n\n`,
+        header: (t) => `\\subsection*{${escapeLatex(t)}}\n\n`
+      };
+    case "markdown":
+      return {
+        link: (t, u) => `[${t}](${u})\n\n`,
+        header: (t) => `## ${t}\n\n`
+      };
+    case "mediawiki":
+      return {
+        link: (t, u) => `[${u} ${t}]\n\n`,
+        header: (t) => `== ${t} ==\n\n`
+      };
+    case "orgmode":
+      return {
+        link: (t, u) => `[[${u}][${t}]]\n\n`,
+        header: (t) => `** ${t}\n\n`
+      };
+    case "restructuredtext":
+    return {
+        // Anonymous hyperlinks (ending in __) are used to prevent
+        // "duplicate target name" errors if multiple tabs have the same title.
+        link: (t, u) => `\`${t} <${u}>\`__\n\n`,
+        header: (t) => `${t}\n${"-".repeat(t.length)}\n\n`
+      };
+    case "textile":
+      return {
+        link: (t, u) => `"${t}":${u}\n\n`,
+        header: (t) => `h2. ${t}\n\n`
+      };
+    case "plaintext":
+      return {
+        link: (t, u) => `${t}\n${u}\n\n`,
+        header: (t) => `${t}\n${"-".repeat(t.length)}\n\n`
+      };
+    case "markdown-plain-links":
+    default:
+      return {
+        // Appends two spaces to the title line to force a line break in Markdown
+        link: (t, u) => `${t}  \n${u}\n\n`,
+        header: (t) => `## ${t}\n\n`
+      };
+  }
+}
+
+// Helper function to process an array of tabs and format them based on the selected syntax
+function formatTabsToText(tabs, formatId) {
   let textToCopy = "";
+  const formatter = getFormatProfile(formatId);
 
   for (const t of tabs) {
-    // 1. Check if the URL uses an allowed protocol
-    if (!isAllowedProtocol(t.url)) {
-      continue; // Skip about:, moz-extension:, etc.
-    }
+    // Check if the URL uses an allowed protocol
+    if (!isAllowedProtocol(t.url)) continue; // Skip about:, moz-extension:, etc.
 
-    let tabString = "";
-
-    // 1. Store the trimmed title in a variable to avoid calling .trim() twice
     const trimmedTitle = (t.title || "").trim();
 
-    // 2. Use the variable for the check and the assignment
-    if (trimmedTitle !== "") {
-      // Two trailing spaces are added to ensure a proper line break when rendered in Markdown
-      tabString += `${trimmedTitle}  \n`;
-    }
+    // If title is missing, fallback to the URL without its protocol scheme
+    // (e.g., "example.com" instead of "https://example.com").
+    const title = trimmedTitle !== ""
+      ? trimmedTitle
+      : t.url.replace(/^(?:https?|file):\/\//i, "");
 
-    // 3. Add URL and double newline
-    tabString += `${t.url}\n\n`;
+    // Encode specific symbols to ensure compatibility with various markup syntaxes
+    const encodedUrl = encodeUrlSpecialChars(t.url);
 
-    textToCopy += tabString;
+    // Add formatted link and double newline
+    textToCopy += formatter.link(title, encodedUrl);
   }
 
   return textToCopy;
 }
 
-// Generates a descriptive Markdown header for a window based on the domains of its tabs.
-// The header lists the top 3 most frequent domains, sorted by count then alphabetically.
-function generateWindowHeader(winTabs) {
-  const fallbackHeader = "## window\n\n";
+// Generates a descriptive header for a window based on the domains of its tabs.
+// Formats the header using the selected markup syntax.
+function generateWindowHeader(winTabs, formatId) {
+  const formatter = getFormatProfile(formatId);
+  const domainsCount = new Map();
 
-  try {
-    const domainsCount = new Map();
-
-    for (const t of winTabs) {
-      if (!isAllowedProtocol(t.url)) continue;
-      try {
-        const urlObj = new URL(t.url);
-        let domain = urlObj.hostname;
-        if (!domain) {
-          if (t.url.startsWith("file://")) {
-            domain = "file";
-          } else {
-            continue;
-          }
-        }
-
-        // Logic: Get current count, default to 0 if undefined, then add 1
-        const currentCount = domainsCount.get(domain) ?? 0;
-        domainsCount.set(domain, currentCount + 1);
-        
-      } catch (e) {
-        // Silently ignore invalid urls when counting domains
-      }
-    }
-
-    // Get keys from Map and convert to an Array for sorting
-    const uniqueDomains = [...domainsCount.keys()];
-
-    if (uniqueDomains.length === 0) return fallbackHeader;
-
-    // Sort domains by occurrence count first (from Map), then alphabetically
-    uniqueDomains.sort((a, b) => {
-      const diff = domainsCount.get(b) - domainsCount.get(a);
-      if (diff !== 0) return diff;
-      return a.localeCompare(b);
-    });
-
-    // Extract top 3
-    const top3 = uniqueDomains.slice(0, 3);
-    let header = `## ${top3.join(", ")}`;
-    
-    // Add ellipsis if there are more than 3 domains
-    if (uniqueDomains.length > 3) {
-      header += "...";
-    }
-    
-    return header + "\n\n";
-
-  } catch (error) {
-    // If anything unexpected happens, we log it for debugging
-    // but return the fallback to keep the app running.
-    console.error("Error generating window header:", error);
-    return fallbackHeader;
+  // 1. Count domains
+  for (const t of winTabs) {
+    if (!isAllowedProtocol(t.url)) continue;
+    try {
+      let domain = t.url.startsWith("file://") ? "file" : new URL(t.url).hostname;
+      if (domain) domainsCount.set(domain, (domainsCount.get(domain) ?? 0) + 1);
+    } catch (e) { /* ignore */ }
   }
+
+  // 2. Sort and extract top 3
+  const uniqueDomains = [...domainsCount.keys()];
+  if (uniqueDomains.length === 0) return formatter.header("window");
+
+  uniqueDomains.sort((a, b) => {
+    const diff = domainsCount.get(b) - domainsCount.get(a);
+    return diff !== 0 ? diff : a.localeCompare(b);
+  });
+
+  let headerText = uniqueDomains.slice(0, 3).join(", ");
+  if (uniqueDomains.length > 3) headerText += "...";
+
+  return formatter.header(headerText);
 }
 
 // Function to query tabs based on specified options and copy them to the clipboard
-async function copyTabs(queryOptions) {
+async function copyTabs(queryOptions, formatId) {
   try {
     const tabs = await browser.tabs.query(queryOptions);
     let textToCopy = "";
 
     if (queryOptions.currentWindow) {
       // For single-window actions, output a simple list without headers
-      textToCopy = formatTabsToText(tabs);
+      textToCopy = formatTabsToText(tabs, formatId);
     } else {
       // For multi-window actions, group tabs by windowId to provide headers for each window
       const windows = new Map();
       for (const t of tabs) {
-        if (!windows.has(t.windowId)) {
-          windows.set(t.windowId, []);
-        }
+        if (!windows.has(t.windowId)) windows.set(t.windowId, []);
         windows.get(t.windowId).push(t);
       }
 
       for (const winTabs of windows.values()) {
-        const winText = formatTabsToText(winTabs);
-
+        const winText = formatTabsToText(winTabs, formatId);
         if (winText) {
-          textToCopy += generateWindowHeader(winTabs);
+          textToCopy += generateWindowHeader(winTabs, formatId);
           textToCopy += winText;
         }
       }
@@ -236,7 +353,7 @@ async function copyTabs(queryOptions) {
     // Write the formatted string to the clipboard
     if (textToCopy) {
       await navigator.clipboard.writeText(textToCopy);
-      console.log("Successfully copied tabs to clipboard.");
+      console.log(`Successfully copied tabs in format ID: ${formatId}.`);
     } else {
       console.log("No valid tabs found to copy.");
     }
@@ -250,11 +367,7 @@ async function pasteTabs() {
   try {
     // Read the text content from the clipboard
     const clipboardText = await navigator.clipboard.readText();
-
-    // Regular expression to match http, https, and file URLs
-    // (?:...) is a non-capturing group. [^\s]+ matches until the next whitespace.
-    const urlRegex = /(?:https?|file):\/\/[^\s]+/ig;
-    const urls = clipboardText.match(urlRegex);
+    const urls = clipboardText.match(getUrlRegex());
 
     if (urls && urls.length > 0) {
       // Open each extracted URL in a new tab in the order they were found
@@ -331,7 +444,7 @@ function isWindowDivider(line) {
   const mediaWikiRegex = /^==.*==$/;
   
   // Matches LaTeX semantic commands
-  const latexRegex = /^\\subsection\{/;
+  const latexRegex = /^\\subsection\*?\s*\{/;
   
   // Matches Setext-style adornments/underlines for Markdown (---), reST (===, ---, or ~~~), and AsciiDoc (~~~)
   const setextRegex = /^[-~=]{3,}$/;
@@ -344,7 +457,6 @@ function isWindowDivider(line) {
 
 // Helper to parse clipboard lines into batches of URLs for current or new windows
 function parseBatches(lines, startInCurrentWindow) {
-  const urlRegex = /(?:https?|file):\/\/[^\s]+/ig;
   const batches = [];
   let currentBatch = { type: null, urls: [] };
   let hasSeenHeader = false;
@@ -375,7 +487,7 @@ function parseBatches(lines, startInCurrentWindow) {
       }
     } else {
       // Not a header. Search for URLs
-      const urls = line.match(urlRegex);
+      const urls = line.match(getUrlRegex());
       if (urls) {
         // Default to current window if no header has been seen yet
         if (!currentBatch.type) currentBatch.type = "current";

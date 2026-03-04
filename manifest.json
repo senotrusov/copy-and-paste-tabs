@@ -9,7 +9,8 @@
     "menus",
     "tabs",
     "clipboardWrite",
-    "clipboardRead"
+    "clipboardRead",
+    "storage"
   ],
   "background": {
     "scripts": [
