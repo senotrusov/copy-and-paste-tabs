@@ -117,6 +117,9 @@ ensure-release-tag:
       ;;
   esac
 
+  # Strip leading 'v'
+  tag="${tag#v}"
+
   # Final verification: Does the strict annotated tag match our project version?
   # A mismatch here usually means the version variable is using a lightweight tag 
   # or a commit hash that 'ensure-release-tag' refuses to accept.
