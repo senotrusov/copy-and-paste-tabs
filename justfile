@@ -61,6 +61,10 @@ version := `
 
 package := "dist/" + project + "-" + version + ".zip"
 
+# Run the test suite
+test:
+  node test.js
+
 # Format project files
 format:
   mdformat --number *.md
@@ -72,8 +76,10 @@ context:
   printf "%s\n" \
     *.js \
     *.svg \
+    justfile \
     manifest.json \
     README.md
+  echo '$ just test'
 
 # Prepare a full release
 release: ensure-release-tag dist
