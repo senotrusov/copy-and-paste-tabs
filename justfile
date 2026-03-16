@@ -61,26 +61,6 @@ version := `
 
 package := "dist/" + project + "-" + version + ".zip"
 
-# Run the test suite
-test:
-  node test.js
-
-# Format project files
-format:
-  mdformat --number *.md
-  rg "[^\x00-\x7F]" || true
-
-# Output key project file paths for LLM prompt context
-context:
-  #!/usr/bin/env bash
-  printf "%s\n" \
-    *.js \
-    *.svg \
-    justfile \
-    manifest.json \
-    README.md
-  echo '$ just test'
-
 # Prepare a full release
 release: ensure-release-tag dist
 
@@ -145,7 +125,7 @@ dist: clean-dist package archive-source
     find . -maxdepth 1 -type f "$@" -printf '%f\0' | LC_ALL=C sort -z
   }
 
-  # Compress all files not already compressed (.zst) and not zip files (.zip)
+  # Compress all files not already compressed
   each ! -name '*.zst' ! -name '*.zip' | xargs -0 --no-run-if-empty zstd --compress --ultra -20 --rm || {
     echo "Error: Zstd compression failed" >&2
     exit 1
@@ -178,6 +158,27 @@ dist: clean-dist package archive-source
   # Sign the checksums file to ensure the authenticity of the release
   sign SHA256SUMS
 
+# Remove dist artifacts
+clean-dist:
+  rm -rf ./dist
+
+# Package the extension into a ZIP file suitable for upload to the
+# Firefox Add-ons (AMO) portal. It includes only the runtime files
+# required by the browser.
+@package:
+  mkdir -p dist
+  jq '.version = "{{version}}"' manifest.json > manifest.json.tmp
+  mv manifest.json.tmp manifest.json
+  rm -f "{{package}}"
+  zip "{{package}}" \
+    background.js \
+    icon.svg \
+    LICENSE \
+    manifest.json
+  jq '.version = "0.0.0"' manifest.json > manifest.json.tmp
+  mv manifest.json.tmp manifest.json
+  echo "Extension packaged successfully: {{package}}" >&2
+
 # Create a tarball of the source code
 archive-source:
   #!/usr/bin/env sh
@@ -209,7 +210,7 @@ archive-source:
     echo "Creating archive from local files (uncommitted changes detected)..." >&2
 
     # Create archive manually excluding build artifacts and git metadata
-    tar --exclude='./.git' --exclude='./.gitignore' --exclude='./dist' --exclude='./VERSION' --transform='s,^\.,{{project}}-{{version}},' --create --file="$tarfile" . || {
+    tar --exclude='./bin' --exclude='./.git' --exclude='./.gitignore' --exclude='./dist' --exclude='./VERSION' --transform='s,^\.,{{project}}-{{version}},' --create --file="$tarfile" . || {
       echo "Error: Failed to create archive from local files." >&2
       exit 1
     }
@@ -231,27 +232,22 @@ archive-source:
     exit 1
   }
 
-# Package the extension into a ZIP file suitable for upload to the
-# Firefox Add-ons (AMO) portal. It includes only the runtime files
-# required by the browser.
-@package:
-  mkdir -p dist
-  jq '.version = "{{version}}"' manifest.json > manifest.json.tmp
-  mv manifest.json.tmp manifest.json
-  rm -f "{{package}}"
-  zip "{{package}}" \
-    background.js \
-    icon.svg \
-    LICENSE \
-    manifest.json
-  jq '.version = "0.0.0"' manifest.json > manifest.json.tmp
-  mv manifest.json.tmp manifest.json
-  echo "Extension packaged successfully: {{package}}" >&2
+# Format project files
+format:
+  mdformat --number *.md
+  rg "[^\x00-\x7F]" || true
 
-# Remove all build artifacts
-clean:
-  rm -rf ./dist
+# Output key project file paths for LLM prompt context
+context:
+  #!/usr/bin/env bash
+  printf "%s\n" \
+    *.js \
+    *.svg \
+    justfile \
+    manifest.json \
+    README.md
+  echo '$ just test'
 
-# Remove dist artifacts
-clean-dist:
-  rm -rf ./dist
+# Run the test suite
+test:
+  node test.js
